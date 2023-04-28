@@ -22,7 +22,8 @@ func Error(w http.ResponseWriter, err error, code int) {
 
 	if err == nil {
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"code": "ok", "message": ""}`))
+		_, _ = w.Write([]byte(`{"code": "ok", "message": ""}
+`))
 		return
 	}
 
@@ -36,5 +37,5 @@ func Error(w http.ResponseWriter, err error, code int) {
 		Message: err.Error(),
 	})
 	w.WriteHeader(code)
-	_, _ = w.Write(data)
+	_, _ = w.Write(append(data, byte('\n')))
 }
