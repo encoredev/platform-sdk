@@ -22,11 +22,7 @@ func Error(w http.ResponseWriter, err error, code int) {
 
 	if err == nil {
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{
-  "code": "ok",
-  "message": ""
-}
-`))
+		_, _ = w.Write([]byte(`{"code": "ok", "message": ""}`))
 		return
 	}
 
@@ -35,10 +31,10 @@ func Error(w http.ResponseWriter, err error, code int) {
 		Message string `json:"message"`
 	}
 
-	data, _ := json.MarshalIndent(&Err{
+	data, _ := json.Marshal(&Err{
 		Code:    http.StatusText(code),
 		Message: err.Error(),
-	}, "", "  ")
+	})
 	w.WriteHeader(code)
 	_, _ = w.Write(data)
 }

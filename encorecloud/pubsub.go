@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -30,7 +31,7 @@ func (c *Client) PublishToTopic(ctx context.Context, topicID string, attrs map[s
 
 	err = c.client.SignedPost(
 		ctx,
-		fmt.Sprintf("/v1/pubsub/%s/publish", topicID),
+		fmt.Sprintf("/v1/pubsub/%s/publish", url.PathEscape(topicID)),
 		auth.PubsubMsg, auth.Create,
 		params, resp,
 
@@ -120,7 +121,7 @@ func (c *Client) CreateSubscriptionHandler(subscriptionID string, logger *zerolo
 		}()
 
 		// Wait for the function to complete or the request to be cancelled
-		var lastError error
+		var firstError error
 		var finished bool
 		keepAliveTimeout := time.NewTicker(KeepAliveInterval)
 		defer keepAliveTimeout.Stop()
@@ -141,17 +142,17 @@ func (c *Client) CreateSubscriptionHandler(subscriptionID string, logger *zerolo
 			case err, done := <-response:
 				if done {
 					finished = true
-				} else {
-					lastError = err
+				} else if firstError == nil {
+					firstError = err
 				}
 			}
 		}
 
 		// Now that the subscription function has completed, send the end message
-		if lastError != nil {
-			logger.Err(lastError).Msg("error while handling PubSub subscription message")
+		if firstError != nil {
+			logger.Err(firstError).Msg("error while handling PubSub subscription message")
 
-			if _, err := fmt.Fprintf(w, "event: nack\ndata: %s\n\n", lastError.Error()); err != nil {
+			if _, err := fmt.Fprintf(w, "event: nack\ndata: %s\n\n", firstError.Error()); err != nil {
 				logger.Err(err).Msg("error while sending nack message")
 			}
 		} else {
