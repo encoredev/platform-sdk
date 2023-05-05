@@ -9,8 +9,9 @@ import (
 
 // PublishParams is the parameters for publishing a message to a topic.
 type PublishParams struct {
-	Attributes map[string]string `json:"attributes,omitempty" encore:"sensitive"` // Optional attributes for this message.
-	Payload    json.RawMessage   `json:"payload" encore:"sensitive"`              // The message payload.
+	Attributes  map[string]string `json:"attributes,omitempty" encore:"sensitive"`   // Optional attributes for this message.
+	OrderingKey string            `json:"ordering_key,omitempty" encore:"sensitive"` // Optional grouping key for this message.
+	Payload     json.RawMessage   `json:"payload" encore:"sensitive"`                // The message payload.
 }
 
 func (p *PublishParams) DeterministicBytes() []byte {
