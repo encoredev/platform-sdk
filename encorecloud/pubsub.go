@@ -24,12 +24,18 @@ const (
 
 // PublishToTopic publishes the specified attrs and data to the topic specified by topicID.
 //
+// orderingKey should be empty on topics not configured with an OrderingKey, otherwise it
+// should be given a string value. It is used to send messages to FIFO queues
+// grouped using the given ordering key value. i.e. Messages sent with the same ordering key
+// will be delivered to consumers in the order they were sent.
+//
 // It returns the message ID of the published message from the underlying message broker and
 // any error encountered.
-func (c *Client) PublishToTopic(ctx context.Context, topicID string, attrs map[string]string, data []byte) (msgID string, err error) {
+func (c *Client) PublishToTopic(ctx context.Context, topicID string, orderingKey string, attrs map[string]string, data []byte) (msgID string, err error) {
 	params := &types.PublishParams{
-		Attributes: attrs,
-		Payload:    data,
+		OrderingKey: orderingKey,
+		Attributes:  attrs,
+		Payload:     data,
 	}
 	resp := &types.PublishResponse{}
 
