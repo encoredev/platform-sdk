@@ -207,16 +207,4 @@ func subscriptionHandlerV1(w http.ResponseWriter, req *http.Request, c *Client, 
 		}
 	}
 	flusher.Flush()
-
-	// Now wait for the request to be closed by Encore Cloud (upto 5 seconds)
-	select {
-	case <-req.Context().Done():
-		// If the request is closed by Encore Cloud, the context will be cancelled, this is a sign that it has processed
-		// our end message successfully
-
-	case <-time.After(KeepAliveInterval):
-		// If we get here, the request was not closed by Encore Cloud, so we should log an error
-		// and return
-		logger.Err(err).Msg("PubSub push connection was not closed by Encore Cloud after ack/nack message sent")
-	}
 }
